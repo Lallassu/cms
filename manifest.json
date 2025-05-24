@@ -1,0 +1,11 @@
+{
+  "domain": "control_my_spa",
+  "name": "Control My Spa",
+  "version": "1.0.0",
+  "documentation": "https://github.com/lallassu/cms",
+  "requirements": [],
+  "dependencies": [],
+  "codeowners": ["@lallassu"],
+  "config_flow": true
+}
+

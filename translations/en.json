@@ -1,0 +1,19 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Login to ControlMySpa",
+        "description": "Enter your login credentials.",
+        "data": {
+          "email": "Email",
+          "password": "Password"
+        }
+      }
+    },
+    "error": {
+      "auth": "Authentication failed. Please check your email and password.",
+      "unknown": "Something went wrong during setup. Check logs for details."
+    }
+  }
+}
+

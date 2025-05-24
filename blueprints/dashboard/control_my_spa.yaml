@@ -1,0 +1,31 @@
+title: Control My Spa
+views:
+  - title: Spa Overview
+    path: spa
+    cards:
+      - type: entities
+        title: Temperature
+        entities:
+          - entity: sensor.spa_water_temperature
+          - entity: sensor.spa_desired_temperature
+
+      - type: entities
+        title: Status
+        entities:
+          - entity: sensor.spa_online_status
+          - entity: sensor.spa_heater_mode
+          - entity: sensor.spa_run_mode
+          - entity: sensor.spa_cleanup_cycle
+          - entity: sensor.spa_error_code
+          - entity: sensor.spa_message_severity
+
+      - type: entities
+        title: Components
+        entities:
+          - entity: sensor.spa_component_filter_0
+          - entity: sensor.spa_component_filter_1
+          - entity: sensor.spa_component_ozone_main
+          - entity: sensor.spa_component_pump_0
+          - entity: sensor.spa_component_circulation_pump_main
+          - entity: sensor.spa_component_light_0
+
