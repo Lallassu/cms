@@ -6,12 +6,12 @@ such as temperature, pump state, light state etc.
 **Note**: It is readonly and you cannot use this to control your spa. Mainly because it's not possible via
 their website dashboard.
 
-I created this in order to integrate with my WiFi enabled spa, which doesn't seem to be supported by the 
+I created this in order to integrate with my `Balboa` WiFi enabled spa, which doesn't seem to be supported by the 
 other integrations available in Home Assistant. So this integration should work with any spa that supports
 the Control My Spa service.
 
-Disclaimer: It might fail to work if you have multiple spas connected to your account, as I only have one spa and the
-ID extraction might be different. Pull requests are welcome!
+***Disclaimer: It might fail to work if you have multiple spas connected to your account, as I only have one spa and the
+ID extraction might be different. Pull requests are welcome!***
 
 ## Requirements
 
