@@ -25,3 +25,5 @@ An account for https://controlmyspa.com/
 4. Login using the credentials for your CMS account.
 
 
+## Screenshot (Example dashboard)
+![image](https://github.com/user-attachments/assets/31ddb3b8-4f47-4445-949c-0e4b42106a23)
