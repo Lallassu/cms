@@ -1,8 +1,9 @@
-# sensor.py
-
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.config_entries import ConfigEntry
 from .const import DOMAIN
+
+# Cache last good values in memory
+_last_valid_values = {}
 
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     return True
@@ -21,7 +22,6 @@ async def async_setup_entry(hass, config_entry: ConfigEntry, async_add_entities)
         SpaRunModeSensor(coordinator)
     ]
 
-    # Add sensors for components
     for component in coordinator.data.get("currentState", {}).get("components", []):
         name = component.get("name")
         component_type = component.get("componentType")
@@ -42,13 +42,17 @@ class SpaTemperatureSensor(CoordinatorEntity):
 
     @property
     def state(self):
+        raw = self.coordinator.data["currentState"]["currentTemp"]
         try:
-            temp = float(self.coordinator.data["currentState"]["currentTemp"])
+            temp = float(raw)
+            if temp <= 1.0:
+                raise ValueError("invalid temp")
             if self._force_celsius and temp > 70:
-                return round((temp - 32) * 5 / 9, 1)
-            return round(temp, 1)
-        except (TypeError, KeyError):
-            return None
+                temp = (temp - 32) * 5 / 9
+            _last_valid_values[self.unique_id] = round(temp, 1)
+        except Exception:
+            return _last_valid_values.get(self.unique_id)
+        return _last_valid_values[self.unique_id]
 
     @property
     def unit_of_measurement(self):
@@ -63,13 +67,17 @@ class SpaDesiredTempSensor(CoordinatorEntity):
 
     @property
     def state(self):
+        raw = self.coordinator.data["currentState"]["desiredTemp"]
         try:
-            temp = float(self.coordinator.data["currentState"]["desiredTemp"])
+            temp = float(raw)
+            if temp <= 1.0:
+                raise ValueError("invalid temp")
             if self._force_celsius and temp > 70:
-                return round((temp - 32) * 5 / 9, 1)
-            return round(temp, 1)
-        except (TypeError, KeyError):
-            return None
+                temp = (temp - 32) * 5 / 9
+            _last_valid_values[self.unique_id] = round(temp, 1)
+        except Exception:
+            return _last_valid_values.get(self.unique_id)
+        return _last_valid_values[self.unique_id]
 
     @property
     def unit_of_measurement(self):
