@@ -24,10 +24,7 @@ class ControlMySpaClient:
             "User-Agent": "Mozilla/5.0" # Just to avoid getting banned or something :) 
         }
         payload = {"email": self.email, "password": self.password}
-        #_LOGGER.debug(f"Sending login request with email: {self.email}")
         response = self.session.post(LOGIN_URL, json=payload, headers=headers)
-        #_LOGGER.debug(f"Login response code: {response.status_code}")
-        #_LOGGER.debug(f"Login response body: {response.text}")
 
         response.raise_for_status()
         data = response.json().get("data", {})
@@ -39,7 +36,6 @@ class ControlMySpaClient:
 
     def ensure_authenticated(self):
         if not self.token or time.time() >= self.token_expiry:
-            _LOGGER.debug("Access token expired or missing, re-authenticating")
             self.login()
             self.get_profile()
 
@@ -49,41 +45,46 @@ class ControlMySpaClient:
             "User-Agent": "Mozilla/5.0"
         }
     
-        # Optional profile request (logging only)
-        #_LOGGER.debug("Fetching user profile")
+        # Fetch user profile to extract spa ID
         response = self.session.get(PROFILE_URL, headers=headers)
-        #_LOGGER.debug(f"Profile response code: {response.status_code}")
-        #_LOGGER.debug(f"Profile response body: {response.text}")
         response.raise_for_status()
-    
-        # Required spa ID fetch
-        #_LOGGER.debug("Fetching spa list to extract spa ID")
-        spa_response = self.session.get("https://iot.controlmyspa.com/spas", headers=headers)
-        #_LOGGER.debug(f"Spas response code: {spa_response.status_code}")
-        #_LOGGER.debug(f"Spas response body: {spa_response.text}")
-        spa_response.raise_for_status()
-    
-        spas = spa_response.json().get("_embedded", {}).get("spas", [])
-        if not spas:
-            raise ValueError("No spas found in account")
-    
-        self.spa_id = spas[0].get("_id")
+        
+        # Extract spa ID from user profile
+        profile_data = response.json().get("data", {})
+        user_data = profile_data.get("user", {})
+        self.spa_id = user_data.get("_id")
+        
         if not self.spa_id:
-            raise ValueError("Spa ID could not be extracted from response")
-    
-        _LOGGER.debug(f"Extracted spa ID: {self.spa_id}")
+            raise ValueError("Spa ID could not be extracted from profile response")
     
     
     def fetch_spa_data(self):
         headers = {
             "Authorization": f"Bearer {self.token}",
-            "User-Agent": "Mozilla/5.0"
+            "Accept": "application/json, text/plain, */*",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Referer": f"https://iot.controlmyspa.com/portal/spas/{self.spa_id}",
+            "Sec-Fetch-Dest": "empty",
+            "Sec-Fetch-Mode": "cors", 
+            "Sec-Fetch-Site": "same-origin",
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"
         }
         url = SPA_URL_TEMPLATE.format(self.spa_id)
-        #_LOGGER.debug(f"Fetching spa data from {url}")
         response = self.session.get(url, headers=headers)
-        #_LOGGER.debug(f"Spa data response code: {response.status_code}")
-        #_LOGGER.debug(f"Spa data response body: {response.text}")
+
+        # If we get an empty response, try to get the correct spa ID from spa list
+        if response.status_code == 200 and not response.text.strip():
+            spa_list_response = self.session.get("https://iot.controlmyspa.com/spas", headers=headers)
+            
+            if spa_list_response.status_code == 200 and spa_list_response.text.strip():
+                spa_list_data = spa_list_response.json()
+                spas = spa_list_data.get("data", {}).get("spas", [])
+                if spas:
+                    actual_spa_id = spas[0].get("_id")
+                    if actual_spa_id:
+                        self.spa_id = actual_spa_id
+                        # Return the spa data directly from the spa list response
+                        return spas[0]
 
         response.raise_for_status()
         return response.json()
